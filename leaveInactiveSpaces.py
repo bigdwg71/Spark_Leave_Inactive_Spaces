@@ -85,9 +85,9 @@ fileName = "LeaveInactiveSpaces-" + startTime + ".log"
 #filePath = os.path.abspath(os.path.join(os.getcwd(), fileName))
 filePath = os.path.join(os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))),fileName)
 print("A log file of this operation will be written to:\r\n" + filePath + "\r\n")
-logFile = open(filePath,'x')
+logFile = open(filePath,'x',encoding='utf-8')
 logFile.write("LeaveInactiveSpaces started at: " + startTime + "\r\n\r\n")
-logFile = open(filePath,'a')
+logFile = open(filePath,'a',encoding='utf-8')
 
 #Get the list of spaces
 roomList = sparkFunctions.getRoomList(authToken)
@@ -107,7 +107,12 @@ for resp in roomList['items']:
     responseCode = "0"
 
     #convert the Spark-return lastActivity time into a useable value
-    lastActivity = dateutil.parser.parse(resp['lastActivity'],ignoretz=True)
+    if 'lastActivity' in resp:
+        lastActivity = dateutil.parser.parse(resp['lastActivity'],ignoretz=True)
+    else:
+        print("Room without lastActivity (Skipping):")
+        print(resp)
+        continue
 
     #calculate the time in days since the space has been active
     currentLastActivity = abs(datetime.datetime.utcnow() - lastActivity).days
